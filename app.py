@@ -190,11 +190,6 @@ elif menu == "Perbandingan Model":
 
         st.pyplot(fig)
 
-    except Exception as e:
-        st.error("❌ File model_metrics.csv tidak ditemukan atau format salah")
-        st.code(str(e))
-
-
 # ================= TENTANG =================
 elif menu == "Tentang Penelitian":
     st.title("📚 Tentang Penelitian")
@@ -224,5 +219,6 @@ elif menu == "Tentang Penelitian":
     - Streamlit
     - GitHub
     """)
+
 
 
