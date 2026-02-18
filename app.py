@@ -163,17 +163,17 @@ elif menu == "Prediksi Dataset (CSV)":
 elif menu == "Perbandingan Model":
     st.title("📈 Perbandingan Model")
 
-    metrics = {
-        "Accuracy": [0.80, 0.82],   # isi sesuai hasil skripsi
-        "Precision": [0.79, 0.83],
-        "Recall": [0.78, 0.81],
-        "F1-Score": [0.78, 0.82]
-    }
+    try:
+        df_metrics = pd.read_csv("model_metrics.csv").set_index("Model")
 
-    df_metrics = pd.DataFrame(metrics, index=["Naive Bayes", "SVM"])
+        st.subheader("📊 Hasil Evaluasi Model (Data Asli Training)")
+        st.dataframe(df_metrics)
 
-    st.dataframe(df_metrics)
-    st.bar_chart(df_metrics)
+        st.bar_chart(df_metrics)
+
+    except:
+        st.error("File model_metrics.csv tidak ditemukan. Pastikan file sudah ada di repository GitHub.")
+
 
 # ================= TENTANG =================
 elif menu == "Tentang Penelitian":
@@ -204,3 +204,4 @@ elif menu == "Tentang Penelitian":
     - Streamlit
     - GitHub
     """)
+
