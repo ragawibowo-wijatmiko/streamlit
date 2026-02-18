@@ -164,15 +164,35 @@ elif menu == "Perbandingan Model":
     st.title("📈 Perbandingan Model")
 
     try:
-        df_metrics = pd.read_csv("model_metrics.csv").set_index("Model")
+        df_metrics = pd.read_csv("model_metrics.csv")
 
         st.subheader("📊 Hasil Evaluasi Model (Data Asli Training)")
         st.dataframe(df_metrics)
 
-        st.bar_chart(df_metrics)
+        # ================= BAR CHART (ILMIAH STYLE) =================
+        metrics = ["Accuracy", "Precision", "Recall", "F1-Score"]
 
-    except:
-        st.error("File model_metrics.csv tidak ditemukan. Pastikan file sudah ada di repository GitHub.")
+        nb_values = df_metrics[df_metrics["Model"]=="Naive Bayes"][metrics].values.flatten()
+        svm_values = df_metrics[df_metrics["Model"]=="SVM"][metrics].values.flatten()
+
+        x = np.arange(len(metrics))
+        width = 0.35
+
+        fig, ax = plt.subplots(figsize=(10,5))
+        ax.bar(x - width/2, nb_values, width, label="Naive Bayes")
+        ax.bar(x + width/2, svm_values, width, label="SVM")
+
+        ax.set_ylabel("Score")
+        ax.set_title("Perbandingan Performa Model")
+        ax.set_xticks(x)
+        ax.set_xticklabels(metrics)
+        ax.legend()
+
+        st.pyplot(fig)
+
+    except Exception as e:
+        st.error("❌ File model_metrics.csv tidak ditemukan atau format salah")
+        st.code(str(e))
 
 
 # ================= TENTANG =================
@@ -204,4 +224,5 @@ elif menu == "Tentang Penelitian":
     - Streamlit
     - GitHub
     """)
+
 
