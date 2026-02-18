@@ -2,28 +2,10 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
-import re
-import nltk
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-
-# ================= NLTK SETUP =================
-nltk.download('punkt')
-nltk.download('stopwords')
-stop_words = set(stopwords.words('indonesian'))
-
-# ================= PREPROCESS FUNCTION =================
-def preprocess_text(text):
-    text = text.lower()
-    text = re.sub(r'[^a-zA-Z\s]', '', text)
-    tokens = word_tokenize(text)
-    tokens = [w for w in tokens if w not in stop_words]
-    return " ".join(tokens)
-
-# ================= LOAD MODEL =================
-nb_model = joblib.load("nb_model.pkl")
-svm_model = joblib.load("svm_model.pkl")
-vectorizer = joblib.load("vectorizer.pkl")
+from sklearn.metrics import confusion_matrix, classification_report
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
 
 # ================= CONFIG =================
 st.set_page_config(
@@ -31,85 +13,75 @@ st.set_page_config(
     layout="wide"
 )
 
+# ================= LOAD FILES =================
+@st.cache_resource
+def load_models():
+    nb = joblib.load("nb_model.pkl")
+    svm = joblib.load("svm_model.pkl")
+    vec = joblib.load("vectorizer.pkl")
+    return nb, svm, vec
+
+nb_model, svm_model, vectorizer = load_models()
+
 # ================= SIDEBAR =================
-st.sidebar.title("📊 Menu Sistem")
+st.sidebar.title("📚 Menu Sistem")
 menu = st.sidebar.radio("Navigasi", [
     "Beranda",
     "Prediksi Manual",
     "Prediksi Dataset (CSV)",
+    "Evaluasi Model",
     "Perbandingan Model",
     "Tentang Penelitian"
 ])
 
 # ================= BERANDA =================
 if menu == "Beranda":
-    st.title("📌 Sistem Analisis Sentimen Cybercrime")
+    st.title("📊 Sistem Analisis Sentimen Cybercrime")
     st.subheader("Komentar YouTube Menggunakan Naive Bayes dan SVM")
 
     st.markdown("""
-    **Judul Penelitian:**  
-    *Analisis sentimen kasus cybercrime pada kolom komentar YouTube menggunakan Naive Bayes dan SVM*
+    ### 🎓 Judul Penelitian  
+    **Analisis sentimen kasus cybercrime pada kolom komentar YouTube menggunakan Naive Bayes dan SVM**
 
-    **Alur Sistem:**
-    1. Scraping komentar YouTube  
-    2. Preprocessing teks  
-    3. TF-IDF Vectorization  
-    4. Training model  
-    5. Evaluasi model  
-    6. Deployment sistem berbasis web  
+    ### 🎯 Tujuan Sistem  
+    Sistem ini bertujuan untuk menganalisis opini publik terhadap kasus cybercrime 
+    berdasarkan komentar YouTube menggunakan metode Machine Learning.
 
-    **Metode:**
-    - TF-IDF
-    - Naive Bayes
-    - Support Vector Machine (SVM)
-    - Ensemble System
+    ### 🧠 Metode:
+    - Scraping komentar YouTube  
+    - Preprocessing teks  
+    - TF-IDF  
+    - Naive Bayes  
+    - Support Vector Machine (SVM)  
 
-    **Output Sistem:**
-    - Prediksi sentimen
-    - Confidence score
-    - Prediksi massal dataset
-    - Perbandingan model
+    ### 📌 Output Sistem:
+    - Prediksi sentimen otomatis  
+    - Analisis dataset  
+    - Evaluasi model  
+    - Perbandingan algoritma  
+    - Visualisasi performa model  
     """)
 
 # ================= PREDIKSI MANUAL =================
 elif menu == "Prediksi Manual":
-    st.title("🧠 Prediksi Sentimen Manual")
+    st.title("📝 Prediksi Sentimen Manual")
 
     text_input = st.text_area("Masukkan komentar YouTube:")
 
     if st.button("Prediksi Sentimen"):
         if text_input.strip() != "":
-            clean_text = preprocess_text(text_input)
-            X_input = vectorizer.transform([clean_text])
+            X_input = vectorizer.transform([text_input])
 
             nb_pred = nb_model.predict(X_input)[0]
             svm_pred = svm_model.predict(X_input)[0]
 
-            nb_prob = nb_model.predict_proba(X_input).max()
-            svm_prob = svm_model.predict_proba(X_input).max()
-
-            # ===== Ensemble Logic =====
-            if nb_pred == svm_pred:
-                final_pred = nb_pred
-            else:
-                # voting sederhana → pilih confidence terbesar
-                final_pred = nb_pred if nb_prob >= svm_prob else svm_pred
-
-            st.subheader("📊 Hasil Prediksi")
-
-            col1, col2, col3 = st.columns(3)
+            st.subheader("📌 Hasil Prediksi")
+            col1, col2 = st.columns(2)
 
             with col1:
                 st.success(f"Naive Bayes: {nb_pred}")
-                st.write(f"Confidence: {nb_prob:.2f}")
-
             with col2:
                 st.info(f"SVM: {svm_pred}")
-                st.write(f"Confidence: {svm_prob:.2f}")
-
-            with col3:
-                st.warning(f"Ensemble: {final_pred}")
-
         else:
             st.warning("Masukkan teks terlebih dahulu")
 
@@ -117,41 +89,23 @@ elif menu == "Prediksi Manual":
 elif menu == "Prediksi Dataset (CSV)":
     st.title("📂 Prediksi Sentimen Dataset")
 
-    uploaded_file = st.file_uploader("Upload file CSV (kolom harus bernama: comment)", type=["csv"])
+    uploaded_file = st.file_uploader("Upload CSV (kolom: text)", type=["csv"])
 
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
 
-        if "comment" not in df.columns:
-            st.error("CSV harus memiliki kolom bernama: comment")
+        if "text" not in df.columns:
+            st.error("CSV harus memiliki kolom bernama 'text'")
         else:
-            st.subheader("Preview Data")
-            st.dataframe(df.head())
-
-            # Preprocessing
-            df["clean_comment"] = df["comment"].astype(str).apply(preprocess_text)
-
-            X_data = vectorizer.transform(df["clean_comment"])
+            X_data = vectorizer.transform(df["text"])
 
             df["NB_Prediction"] = nb_model.predict(X_data)
             df["SVM_Prediction"] = svm_model.predict(X_data)
 
-            # Ensemble
-            ensemble_preds = []
-            for i in range(X_data.shape[0]):
-                nb_p = df["NB_Prediction"].iloc[i]
-                svm_p = df["SVM_Prediction"].iloc[i]
-                if nb_p == svm_p:
-                    ensemble_preds.append(nb_p)
-                else:
-                    ensemble_preds.append(svm_p)
-            df["Ensemble_Prediction"] = ensemble_preds
+            st.subheader("📄 Hasil Prediksi")
+            st.dataframe(df.head(20))
 
-            st.subheader("📊 Hasil Prediksi Dataset")
-            st.dataframe(df[["comment", "NB_Prediction", "SVM_Prediction", "Ensemble_Prediction"]])
-
-            # Download
-            csv = df.to_csv(index=False).encode('utf-8')
+            csv = df.to_csv(index=False).encode("utf-8")
             st.download_button(
                 "⬇️ Download Hasil Prediksi",
                 csv,
@@ -159,52 +113,90 @@ elif menu == "Prediksi Dataset (CSV)":
                 "text/csv"
             )
 
-# ================= PERBANDINGAN =================
+# ================= EVALUASI MODEL =================
+elif menu == "Evaluasi Model":
+    st.title("📊 Evaluasi Model (Confusion Matrix + Report)")
+
+    uploaded_test = st.file_uploader("Upload data uji CSV (kolom: text,label)", type=["csv"])
+
+    if uploaded_test:
+        df_test = pd.read_csv(uploaded_test)
+
+        if not {"text","label"}.issubset(df_test.columns):
+            st.error("CSV harus memiliki kolom: text dan label")
+        else:
+            X_test = vectorizer.transform(df_test["text"])
+            y_true = df_test["label"]
+
+            nb_pred = nb_model.predict(X_test)
+            svm_pred = svm_model.predict(X_test)
+
+            labels = sorted(list(set(y_true)))
+
+            # ===== Confusion Matrix NB =====
+            st.subheader("📌 Confusion Matrix Naive Bayes")
+            cm_nb = confusion_matrix(y_true, nb_pred)
+            fig1, ax1 = plt.subplots()
+            sns.heatmap(cm_nb, annot=True, fmt="d", cmap="Blues",
+                        xticklabels=labels, yticklabels=labels, ax=ax1)
+            ax1.set_xlabel("Predicted")
+            ax1.set_ylabel("Actual")
+            st.pyplot(fig1)
+
+            # ===== Confusion Matrix SVM =====
+            st.subheader("📌 Confusion Matrix SVM")
+            cm_svm = confusion_matrix(y_true, svm_pred)
+            fig2, ax2 = plt.subplots()
+            sns.heatmap(cm_svm, annot=True, fmt="d", cmap="Greens",
+                        xticklabels=labels, yticklabels=labels, ax=ax2)
+            ax2.set_xlabel("Predicted")
+            ax2.set_ylabel("Actual")
+            st.pyplot(fig2)
+
+            # ===== Classification Report =====
+            st.subheader("📄 Classification Report Naive Bayes")
+            st.text(classification_report(y_true, nb_pred))
+
+            st.subheader("📄 Classification Report SVM")
+            st.text(classification_report(y_true, svm_pred))
+
+# ================= PERBANDINGAN MODEL =================
 elif menu == "Perbandingan Model":
-    st.title("📈 Perbandingan Model")
+    st.title("📈 Perbandingan Performa Model")
 
     try:
-        df_metrics = pd.read_csv("model_metrics.csv")
+        df_metrics = pd.read_csv("model_metrics.csv").set_index("Model")
 
         st.subheader("📊 Hasil Evaluasi Model (Data Asli Training)")
         st.dataframe(df_metrics)
 
-        # ================= BAR CHART (ILMIAH STYLE) =================
-        metrics = ["Accuracy", "Precision", "Recall", "F1-Score"]
+        # === Diagram Batang (Simple Akademik) ===
+        st.subheader("📉 Diagram Perbandingan Performa Model")
 
-        nb_values = df_metrics[df_metrics["Model"]=="Naive Bayes"][metrics].values.flatten()
-        svm_values = df_metrics[df_metrics["Model"]=="SVM"][metrics].values.flatten()
-
-        x = np.arange(len(metrics))
-        width = 0.35
-
-        fig, ax = plt.subplots(figsize=(10,5))
-        ax.bar(x - width/2, nb_values, width, label="Naive Bayes")
-        ax.bar(x + width/2, svm_values, width, label="SVM")
-
+        fig, ax = plt.subplots()
+        df_metrics.plot(kind="bar", ax=ax)
         ax.set_ylabel("Score")
-        ax.set_title("Perbandingan Performa Model")
-        ax.set_xticks(x)
-        ax.set_xticklabels(metrics)
-        ax.legend()
-
+        ax.set_title("Perbandingan Naive Bayes vs SVM")
         st.pyplot(fig)
+
+    except Exception as e:
+        st.error("❌ File model_metrics.csv tidak ditemukan atau format salah")
 
 # ================= TENTANG =================
 elif menu == "Tentang Penelitian":
-    st.title("📚 Tentang Penelitian")
+    st.title("📘 Tentang Penelitian")
 
     st.markdown("""
-    **Judul:**  
+    ### 🎓 Judul  
     Analisis sentimen kasus cybercrime pada kolom komentar YouTube menggunakan Naive Bayes dan SVM
 
-    **Peneliti:**  
-    Raga Wibowo
+    ### 👨‍🎓 Peneliti  
+    **Raga Wibowo**
 
-    **Bidang:**  
+    ### 📚 Bidang  
     Sistem Informasi / Data Science / Machine Learning
 
-    **Metodologi Penelitian:**
+    ### 🧠 Metodologi:
     - Scraping komentar YouTube  
     - Preprocessing teks  
     - TF-IDF  
@@ -212,13 +204,10 @@ elif menu == "Tentang Penelitian":
     - Evaluasi model  
     - Deployment sistem berbasis web  
 
-    **Tools:**
-    - Python
-    - Google Colab
-    - Scikit-learn
-    - Streamlit
-    - GitHub
+    ### 🛠 Tools:
+    - Python  
+    - Google Colab  
+    - Scikit-learn  
+    - Streamlit  
+    - GitHub  
     """)
-
-
-
