@@ -205,7 +205,6 @@ elif menu == "📊 Evaluasi Model":
         st.text(classification_report(y_true, svm_pred))
 
 # ================= PERBANDINGAN MODEL =================
-# ================= PERBANDINGAN MODEL =================
 elif menu == "Perbandingan Model":
     st.title("📈 Perbandingan Performa Model")
 
@@ -256,5 +255,6 @@ elif menu == "ℹ️ Tentang Sistem":
     - Machine Learning  
     - NLP  
     """)
+
 
 
