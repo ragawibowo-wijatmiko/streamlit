@@ -7,9 +7,17 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 
+# --- 1. CSS MODERN & TERANG (BRIGHT THEME) ---
+st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+    
 # ================= CONFIG =================
 st.set_page_config(
-    page_title="Sistem Analisis Sentimen Cybercrime",
+    page_title="ANALISIS SENTIMEN MASYARAKAT TERHADAP KASUS 
+CYBERCRIME PADA KOLOM KOMENTAR YOUTUBE 
+MENGGUNAKAN ALGORITMA SUPPORT VECTOR MACHINE DAN 
+NAIVE BAYES",
     layout="wide"
 )
 
@@ -211,3 +219,4 @@ elif menu == "Tentang Penelitian":
     - Streamlit  
     - GitHub  
     """)
+
