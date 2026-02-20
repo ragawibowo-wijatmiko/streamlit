@@ -46,7 +46,7 @@ vectorizer = joblib.load("vectorizer.pkl")
 positive_df = pd.read_csv("positive.csv")
 negative_df = pd.read_csv("negative.csv")
 alay_df = pd.read_csv("kamusalay.csv")
-slang_df = pd.read_csv("slangword-indonesian.csv")
+slang_df = pd.read_csv("Slangword-indonesian.csv")
 
 positive_words = set(positive_df.iloc[:,0].str.lower())
 negative_words = set(negative_df.iloc[:,0].str.lower())
@@ -248,3 +248,4 @@ elif menu == "ℹ️ Tentang Sistem":
     - Machine Learning  
     - NLP  
     """)
+
