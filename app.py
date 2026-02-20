@@ -60,7 +60,7 @@ st.markdown("""
         margin-bottom: 40px;
     }
     </style>
-    """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True""")
 
 # ================= CONFIG =================
 st.set_page_config(
@@ -237,6 +237,7 @@ elif menu == "Tentang Penelitian":
     - Streamlit  
     - GitHub  
     """)
+
 
 
 
