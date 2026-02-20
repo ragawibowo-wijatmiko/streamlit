@@ -208,26 +208,37 @@ elif menu == "📊 Evaluasi Model":
 elif menu == "Perbandingan Model":
     st.title("📊 Perbandingan Performa Model")
 
+    st.write("🔍 Mencoba membaca file: model_metrics.csv")
+
     try:
         df_metrics = pd.read_csv("model_metrics.csv")
 
-        st.subheader("📋 Tabel Evaluasi Model (Data Training Asli)")
+        # Debug tampilkan kolom
+        st.write("Kolom CSV:", list(df_metrics.columns))
+        st.write("Preview data:")
         st.dataframe(df_metrics)
 
-        # --- Grafik Batang ---
-        st.subheader("📈 Grafik Perbandingan Model")
+        # Validasi kolom
+        required_cols = ["Model", "Accuracy", "Precision", "Recall", "F1-Score"]
+        if not all(col in df_metrics.columns for col in required_cols):
+            st.error("❌ Format CSV salah! Kolom wajib:")
+            st.code(required_cols)
+        else:
+            st.subheader("📋 Tabel Evaluasi Model")
+            st.dataframe(df_metrics)
 
-        metrics = ["Accuracy", "Precision", "Recall", "F1-Score"]
+            st.subheader("📈 Grafik Batang Perbandingan Model")
 
-        for metric in metrics:
-            st.markdown(f"### {metric}")
-            chart_data = df_metrics.set_index("Model")[[metric]]
-            st.bar_chart(chart_data)
+            metrics = ["Accuracy", "Precision", "Recall", "F1-Score"]
+
+            for metric in metrics:
+                st.markdown(f"### {metric}")
+                chart_df = df_metrics.set_index("Model")[[metric]]
+                st.bar_chart(chart_df)
 
     except Exception as e:
-        st.error("❌ File model_metrics.csv tidak ditemukan atau format salah")
+        st.error("❌ Gagal membaca model_metrics.csv")
         st.code(str(e))
-
 # ================= TENTANG =================
 elif menu == "ℹ️ Tentang Sistem":
     st.title("ℹ️ Tentang Sistem")
@@ -257,6 +268,7 @@ elif menu == "ℹ️ Tentang Sistem":
     - Machine Learning  
     - NLP  
     """)
+
 
 
 
