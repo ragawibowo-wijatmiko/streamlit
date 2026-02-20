@@ -10,8 +10,8 @@ import os
 # --- 1. CSS MODERN & TERANG (BRIGHT THEME) ---
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-    
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap'); 
+    """)
 # ================= CONFIG =================
 st.set_page_config(
     page_title="ANALISIS SENTIMEN MASYARAKAT TERHADAP KASUS 
@@ -217,4 +217,6 @@ elif menu == "Tentang Penelitian":
     - Google Colab  
     - Scikit-learn  
     - Streamlit  
-    - GitHub  """)
+    - GitHub  
+    """)
+
