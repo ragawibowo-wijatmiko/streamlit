@@ -206,25 +206,27 @@ elif menu == "📊 Evaluasi Model":
 
 # ================= PERBANDINGAN MODEL =================
 elif menu == "Perbandingan Model":
-    st.title("📈 Perbandingan Performa Model")
+    st.title("📊 Perbandingan Performa Model")
 
     try:
-        df_metrics = pd.read_csv("model_metrics.csv").set_index("Model")
+        df_metrics = pd.read_csv("model_metrics.csv")
 
-        st.subheader("📊 Hasil Evaluasi Model (Data Asli Training)")
+        st.subheader("📋 Tabel Evaluasi Model (Data Training Asli)")
         st.dataframe(df_metrics)
 
-        # === Diagram Batang (Simple Akademik) ===
-        st.subheader("📉 Diagram Perbandingan Performa Model")
+        # --- Grafik Batang ---
+        st.subheader("📈 Grafik Perbandingan Model")
 
-        fig, ax = plt.subplots()
-        df_metrics.plot(kind="bar", ax=ax)
-        ax.set_ylabel("Score")
-        ax.set_title("Perbandingan Naive Bayes vs SVM")
-        st.pyplot(fig)
+        metrics = ["Accuracy", "Precision", "Recall", "F1-Score"]
+
+        for metric in metrics:
+            st.markdown(f"### {metric}")
+            chart_data = df_metrics.set_index("Model")[[metric]]
+            st.bar_chart(chart_data)
 
     except Exception as e:
         st.error("❌ File model_metrics.csv tidak ditemukan atau format salah")
+        st.code(str(e))
 
 # ================= TENTANG =================
 elif menu == "ℹ️ Tentang Sistem":
@@ -255,6 +257,7 @@ elif menu == "ℹ️ Tentang Sistem":
     - Machine Learning  
     - NLP  
     """)
+
 
 
 
