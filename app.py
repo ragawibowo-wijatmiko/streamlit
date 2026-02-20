@@ -7,61 +7,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 
-# --- CSS MODERN & TERANG (BRIGHT THEME) ---
-st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-    
-    html, body, [class*="css"] {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        background-color: #F8FAFC; /* Abu-abu sangat muda agar mata tidak lelah */
-    }
-
-    /* SIDEBAR TERANG */
-    [data-testid="stSidebar"] {
-        background-color: #FFFFFF !important;
-        border-right: 1px solid #E2E8F0;
-    }
-    [data-testid="stSidebar"] * {
-        color: #1E293B !important; /* Teks Sidebar Gelap agar kontras */
-    }
-
-    /* KARTU KPI MODERN */
-    .metric-card {
-        background-color: #ffffff;
-        border: 1px solid #F1F5F9;
-        border-radius: 16px;
-        padding: 24px;
-        text-align: center;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-    }
-    .metric-label {
-        color: #64748B;
-        font-size: 14px;
-        font-weight: 600;
-        margin-bottom: 8px;
-    }
-    .metric-value {
-        color: #0F172A;
-        font-size: 32px;
-        font-weight: 800;
-    }
-
-    /* HEADER TEXT */
-    .header-main {
-        color: #0F172A;
-        font-weight: 800;
-        letter-spacing: -0.025em;
-        margin-bottom: 30px;
-    }
-    
-    /* Tombol & Slider Styling */
-    .stSlider [data-baseweb="slider"] {
-        margin-bottom: 40px;
-    }
-    </style>
-    """, unsafe_allow_html=True""")
-
 # ================= CONFIG =================
 st.set_page_config(
     page_title="Analisis Sentimen Masyarakat Pada Kolom Komentar Youtube Menggunakan Algoritma SVM dan Naive Bayes",
@@ -237,6 +182,7 @@ elif menu == "Tentang Penelitian":
     - Streamlit  
     - GitHub  
     """)
+
 
 
 
