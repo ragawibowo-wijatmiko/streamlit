@@ -205,19 +205,27 @@ elif menu == "📊 Evaluasi Model":
         st.text(classification_report(y_true, svm_pred))
 
 # ================= PERBANDINGAN MODEL =================
-elif menu == "📈 Perbandingan Model":
-    st.title("📈 Perbandingan Model")
+# ================= PERBANDINGAN MODEL =================
+elif menu == "Perbandingan Model":
+    st.title("📈 Perbandingan Performa Model")
 
     try:
         df_metrics = pd.read_csv("model_metrics.csv").set_index("Model")
 
-        st.subheader("📊 Performa Model (Hasil Training)")
+        st.subheader("📊 Hasil Evaluasi Model (Data Asli Training)")
         st.dataframe(df_metrics)
 
-        st.bar_chart(df_metrics)
+        # === Diagram Batang (Simple Akademik) ===
+        st.subheader("📉 Diagram Perbandingan Performa Model")
 
-    except:
-        st.error("File model_metrics.csv tidak ditemukan.")
+        fig, ax = plt.subplots()
+        df_metrics.plot(kind="bar", ax=ax)
+        ax.set_ylabel("Score")
+        ax.set_title("Perbandingan Naive Bayes vs SVM")
+        st.pyplot(fig)
+
+    except Exception as e:
+        st.error("❌ File model_metrics.csv tidak ditemukan atau format salah")
 
 # ================= TENTANG =================
 elif menu == "ℹ️ Tentang Sistem":
@@ -248,4 +256,5 @@ elif menu == "ℹ️ Tentang Sistem":
     - Machine Learning  
     - NLP  
     """)
+
 
