@@ -217,6 +217,4 @@ elif menu == "Tentang Penelitian":
     - Google Colab  
     - Scikit-learn  
     - Streamlit  
-    - GitHub  
-    """)
-
+    - GitHub  """)
