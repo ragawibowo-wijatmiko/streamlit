@@ -43,10 +43,10 @@ svm_model = joblib.load("svm_model.pkl")
 vectorizer = joblib.load("vectorizer.pkl")
 
 # ================= LOAD KAMUS =================
-positive_df = pd.read_csv("kamus/positive.csv")
-negative_df = pd.read_csv("kamus/negative.csv")
-alay_df = pd.read_csv("kamus/kamusalay.csv")
-slang_df = pd.read_csv("kamus/slangword.csv")
+positive_df = pd.read_csv("positive.csv")
+negative_df = pd.read_csv("negative.csv")
+alay_df = pd.read_csv("kamusalay.csv")
+slang_df = pd.read_csv("slangword-indonesian.csv")
 
 positive_words = set(positive_df.iloc[:,0].str.lower())
 negative_words = set(negative_df.iloc[:,0].str.lower())
@@ -248,3 +248,4 @@ elif menu == "ℹ️ Tentang Sistem":
     - Machine Learning  
     - NLP  
     """)
+
