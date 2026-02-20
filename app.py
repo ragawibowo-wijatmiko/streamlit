@@ -43,10 +43,10 @@ svm_model = joblib.load("svm_model.pkl")
 vectorizer = joblib.load("vectorizer.pkl")
 
 # ================= LOAD KAMUS =================
-positive_df = pd.read_csv("positive.csv")
-negative_df = pd.read_csv("negative.csv")
-alay_df = pd.read_csv("kamusalay.csv")
-slang_df = pd.read_csv("Slangword-indonesian.csv")
+positive_df = pd.read_csv("kamus/positive.csv")
+negative_df = pd.read_csv("kamus/negative.csv")
+alay_df = pd.read_csv("kamus/kamusalay.csv")
+slang_df = pd.read_csv("kamus/slangword.csv")
 
 positive_words = set(positive_df.iloc[:,0].str.lower())
 negative_words = set(negative_df.iloc[:,0].str.lower())
@@ -205,40 +205,20 @@ elif menu == "📊 Evaluasi Model":
         st.text(classification_report(y_true, svm_pred))
 
 # ================= PERBANDINGAN MODEL =================
-elif menu == "Perbandingan Model":
-    st.title("📊 Perbandingan Performa Model")
-
-    st.write("🔍 Mencoba membaca file: model_metrics.csv")
+elif menu == "📈 Perbandingan Model":
+    st.title("📈 Perbandingan Model")
 
     try:
-        df_metrics = pd.read_csv("model_metrics.csv")
+        df_metrics = pd.read_csv("model_metrics.csv").set_index("Model")
 
-        # Debug tampilkan kolom
-        st.write("Kolom CSV:", list(df_metrics.columns))
-        st.write("Preview data:")
+        st.subheader("📊 Performa Model (Hasil Training)")
         st.dataframe(df_metrics)
 
-        # Validasi kolom
-        required_cols = ["Model", "Accuracy", "Precision", "Recall", "F1-Score"]
-        if not all(col in df_metrics.columns for col in required_cols):
-            st.error("❌ Format CSV salah! Kolom wajib:")
-            st.code(required_cols)
-        else:
-            st.subheader("📋 Tabel Evaluasi Model")
-            st.dataframe(df_metrics)
+        st.bar_chart(df_metrics)
 
-            st.subheader("📈 Grafik Batang Perbandingan Model")
+    except:
+        st.error("File model_metrics.csv tidak ditemukan.")
 
-            metrics = ["Accuracy", "Precision", "Recall", "F1-Score"]
-
-            for metric in metrics:
-                st.markdown(f"### {metric}")
-                chart_df = df_metrics.set_index("Model")[[metric]]
-                st.bar_chart(chart_df)
-
-    except Exception as e:
-        st.error("❌ Gagal membaca model_metrics.csv")
-        st.code(str(e))
 # ================= TENTANG =================
 elif menu == "ℹ️ Tentang Sistem":
     st.title("ℹ️ Tentang Sistem")
@@ -268,8 +248,3 @@ elif menu == "ℹ️ Tentang Sistem":
     - Machine Learning  
     - NLP  
     """)
-
-
-
-
-
