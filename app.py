@@ -9,10 +9,7 @@ import os
 
 # ================= CONFIG =================
 st.set_page_config(
-    page_title="ANALISIS SENTIMEN MASYARAKAT TERHADAP KASUS 
-CYBERCRIME PADA KOLOM KOMENTAR YOUTUBE 
-MENGGUNAKAN ALGORITMA SUPPORT VECTOR MACHINE DAN 
-NAIVE BAYES",
+    page_title="Analisis Sentimen Masyarakat Pada Kolom Komentar Youtube Menggunakan Algoritma SVM dan Naive Bayes",
     layout="wide"
 )
 
@@ -214,4 +211,5 @@ elif menu == "Tentang Penelitian":
     - Streamlit  
     - GitHub  
     """)
+
 
