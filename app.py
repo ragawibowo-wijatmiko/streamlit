@@ -213,8 +213,15 @@ elif menu == "📈 Perbandingan Model":
 
         st.subheader("📊 Performa Model (Hasil Training)")
         st.dataframe(df_metrics)
+        
+     # === Diagram Batang (Simple Akademik) ===
+        st.subheader("📉 Diagram Perbandingan Performa Model")
 
-        st.bar_chart(df_metrics)
+        fig, ax = plt.subplots()
+        df_metrics.plot(kind="bar", ax=ax)
+        ax.set_ylabel("Score")
+        ax.set_title("Perbandingan Naive Bayes vs SVM")
+        st.pyplot(fig)
 
     except:
         st.error("File model_metrics.csv tidak ditemukan.")
@@ -248,4 +255,5 @@ elif menu == "ℹ️ Tentang Sistem":
     - Machine Learning  
     - NLP  
     """)
+
 
