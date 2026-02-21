@@ -99,7 +99,7 @@ menu = st.sidebar.radio("Navigasi Menu", [
 # ================= BERANDA =================
 if menu == "🏠 Beranda":
     st.title("📊 Sistem Analisis Sentimen Cybercrime")
-    st.subheader("Hybrid System: Lexicon + Naive Bayes + SVM")
+    st.subheader("Naive Bayes + SVM")
 
     st.markdown("""
     ### 🎯 Fitur Sistem
@@ -117,8 +117,7 @@ if menu == "🏠 Beranda":
     - Preprocessing teks
     - Normalisasi slang & alay
     - TF-IDF
-    - Supervised Learning
-    - Hybrid sentiment system
+    - Machine Learning
     """)
 
 # ================= PREDIKSI MANUAL =================
@@ -211,7 +210,7 @@ elif menu == "📈 Perbandingan Model":
     try:
         df_metrics = pd.read_csv("model_metrics.csv").set_index("Model")
 
-        st.subheader("📊 Performa Model (Hasil Training)")
+        st.subheader("📊 Performa Model (Hasil Data Uji)")
         st.dataframe(df_metrics)
         
      # === Diagram Batang (Simple Akademik) ===
@@ -232,16 +231,16 @@ elif menu == "ℹ️ Tentang Sistem":
 
     st.markdown("""
     **Sistem:**  
-    Sistem Analisis Sentimen Cybercrime Berbasis Hybrid
+    Sistem Analisis Sentimen Cybercrime Metode Naive Bayes dan SVM
 
     **Metode:**  
-    - Lexicon-Based Sentiment  
+    - Scraping
+    - Preprocessing Teks
     - TF-IDF  
     - Naive Bayes  
     - Support Vector Machine (SVM)
 
     **Fitur Utama:**
-    - Hybrid classification
     - Evaluasi ilmiah model
     - Visualisasi performa
     - Implementasi web-based
@@ -255,5 +254,6 @@ elif menu == "ℹ️ Tentang Sistem":
     - Machine Learning  
     - NLP  
     """)
+
 
 
