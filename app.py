@@ -80,7 +80,7 @@ with col1:
     st.metric("SVM Accuracy", svm_metrics["Accuracy"])
     st.metric("SVM Precision", svm_metrics["Precision"])
     st.metric("SVM Recall", svm_metrics["Recall"])
-    st.metric("SVM F1-Score", svm_metrics["F1-score"])
+    st.metric("SVM F1-Score", svm_metrics["F1-Score"])
 
 with col2:
     st.metric("Naive Bayes Accuracy", nb_metrics["Accuracy"])
@@ -172,3 +172,4 @@ st.divider()
 # =========================
 st.subheader("📋 Preview Dataset")
 st.dataframe(df.head())
+
