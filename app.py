@@ -18,7 +18,7 @@ st.set_page_config(page_title="Dashboard Analisis Sentimen Cybercrime",
 def load_model():
     svm = joblib.load("svm_model.pkl")
     nb = joblib.load("nb_model.pkl")
-    tfidf = joblib.load("vectorizer_tfidf.pkl")
+    tfidf = joblib.load("vectorizer.pkl")
     return svm, nb, tfidf
 
 @st.cache_data
@@ -157,4 +157,5 @@ elif menu == "Prediksi Komentar":
                 st.error(f"Sentimen: {prediction}")
             else:
                 st.info(f"Sentimen: {prediction}")
+
 
