@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import joblib
 import matplotlib.pyplot as plt
-from sklearn.metrics import classification_report
+import numpy as np
 
 st.set_page_config(
     page_title="Dashboard Analisis Sentimen",
@@ -10,20 +10,44 @@ st.set_page_config(
     layout="wide"
 )
 
-# ======================
-# DARK MODE STYLE
-# ======================
+# ==============================
+# DARK NAVY PREMIUM STYLE
+# ==============================
 
 st.markdown("""
 <style>
-body {background-color: #0E1117; color: white;}
-.stMetric {background-color: #1E222B; padding: 15px; border-radius: 10px;}
+html, body, [class*="css"]  {
+    background-color: #0A192F;
+    color: white;
+}
+
+.stMetric {
+    background-color: #112240;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.sidebar .sidebar-content {
+    background-color: #020C1B;
+}
+
+h1, h2, h3, h4 {
+    color: #64FFDA;
+}
+
+.stButton>button {
+    background-color: #64FFDA;
+    color: black;
+    border-radius: 8px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
-# ======================
-# LOAD MODEL & DATA
-# ======================
+# ==============================
+# LOAD FILES
+# ==============================
 
 @st.cache_resource
 def load_model():
@@ -36,18 +60,17 @@ def load_model():
 def load_data():
     return pd.read_csv("dataset.csv")
 
-svm_model, nb_model, tfidf = load_model()
-df = load_data()
-
 @st.cache_data
 def load_metrics():
     return pd.read_csv("model_metrics.csv")
 
+svm_model, nb_model, tfidf = load_model()
+df = load_data()
 metrics_df = load_metrics()
 
-# ======================
+# ==============================
 # SIDEBAR
-# ======================
+# ==============================
 
 st.sidebar.title("📌 Menu Navigasi")
 menu = st.sidebar.radio(
@@ -59,15 +82,15 @@ menu = st.sidebar.radio(
 )
 
 st.sidebar.markdown("---")
-st.sidebar.info("Skripsi Raga Wibowo Wijatmiko\nAnalisis Sentimen Cybercrime\nSVM dan Naive Bayes")
+st.sidebar.info("Skripsi Raga Wibowo Wijatmiko\nAnalisis Sentimen Cybercrime\nSVM vs Naive Bayes")
 
-# ======================
+# ==============================
 # DASHBOARD UTAMA
-# ======================
+# ==============================
 
 if menu == "Dashboard Utama":
 
-    st.title("📊 Dashboard Analisis Sentimen Komentar YouTube")
+    st.title("📊 Dashboard Analisis Sentimen")
 
     total = len(df)
     positif = len(df[df['sentiment'] == 'positif'])
@@ -82,74 +105,72 @@ if menu == "Dashboard Utama":
     col4.metric("Netral", netral)
 
     st.markdown("---")
-    st.subheader("📄 Preview Dataset")
+    st.subheader("Preview Dataset")
     st.dataframe(df[['comment','stemming','sentiment']].head())
 
-# ======================
+# ==============================
 # VISUALISASI
-# ======================
+# ==============================
 
 elif menu == "Visualisasi Sentimen":
 
     st.title("📈 Distribusi Sentimen")
 
-    sentiment_counts = df['sentiment'].value_counts()
+    counts = df['sentiment'].value_counts()
 
     fig, ax = plt.subplots()
-    ax.bar(sentiment_counts.index, sentiment_counts.values)
-    ax.set_xlabel("Sentimen")
+    ax.bar(counts.index, counts.values)
     ax.set_ylabel("Jumlah")
-    ax.set_title("Distribusi Sentimen")
+    ax.set_title("Distribusi Sentimen Komentar")
     st.pyplot(fig)
 
-# ======================
+# ==============================
 # PERBANDINGAN MODEL
-# ======================
+# ==============================
 
 elif menu == "Perbandingan Model":
 
     st.title("⚖️ Perbandingan Performa Model (Data Uji)")
-
-    st.subheader("📊 Tabel Hasil Evaluasi")
     st.dataframe(metrics_df)
 
-    metrics = metrics_df['Metrics']
-    svm_scores = metrics_df['SVM']
-    nb_scores = metrics_df['Naive_Bayes']
+    # Ambil nilai berdasarkan nama kolom CSV kamu
+    svm_row = metrics_df[metrics_df['Model'] == 'SVM'].iloc[0]
+    nb_row = metrics_df[metrics_df['Model'] == 'Naive Bayes'].iloc[0]
 
-    x = range(len(metrics))
+    metrics = ['Accuracy', 'Precision', 'Recall', 'F1-Score']
+    svm_scores = [svm_row[m] for m in metrics]
+    nb_scores = [nb_row[m] for m in metrics]
+
+    x = np.arange(len(metrics))
     width = 0.35
 
     fig, ax = plt.subplots(figsize=(8,5))
 
-    ax.bar([i - width/2 for i in x], svm_scores, width, label="SVM")
-    ax.bar([i + width/2 for i in x], nb_scores, width, label="Naive Bayes")
+    ax.bar(x - width/2, svm_scores, width, label="SVM")
+    ax.bar(x + width/2, nb_scores, width, label="Naive Bayes")
 
     ax.set_xticks(x)
     ax.set_xticklabels(metrics)
     ax.set_ylim(0,1)
     ax.set_ylabel("Nilai Skor")
-    ax.set_title("Perbandingan Performa Algoritma SVM vs Naive Bayes (Data Uji)")
+    ax.set_title("Perbandingan Performa Algoritma")
     ax.legend()
 
     for i in range(len(metrics)):
-        ax.text(i - width/2, svm_scores[i] + 0.02, f"{svm_scores[i]:.2f}", ha='center')
-        ax.text(i + width/2, nb_scores[i] + 0.02, f"{nb_scores[i]:.2f}", ha='center')
+        ax.text(x[i] - width/2, svm_scores[i] + 0.02, f"{svm_scores[i]:.2f}", ha='center')
+        ax.text(x[i] + width/2, nb_scores[i] + 0.02, f"{nb_scores[i]:.2f}", ha='center')
 
     st.pyplot(fig)
 
-    st.info("Hasil evaluasi dihitung berdasarkan data uji (20% dari total dataset).")
-
-# ======================
-# PREDIKSI
-# ======================
+# ==============================
+# PREDIKSI KOMENTAR
+# ==============================
 
 elif menu == "Prediksi Komentar":
 
-    st.title("🧠 Prediksi Sentimen Komentar Baru")
+    st.title("🧠 Prediksi Sentimen Komentar")
 
     user_input = st.text_area("Masukkan komentar di sini:")
-    model_choice = st.selectbox("Pilih Model", ["SVM", "Naive Bayes"])
 
     if st.button("Prediksi"):
 
@@ -158,17 +179,25 @@ elif menu == "Prediksi Komentar":
         else:
             vector = tfidf.transform([user_input])
 
-            if model_choice == "SVM":
-                prediction = svm_model.predict(vector)[0]
-            else:
-                prediction = nb_model.predict(vector)[0]
+            svm_pred = svm_model.predict(vector)[0]
+            nb_pred = nb_model.predict(vector)[0]
 
-            if prediction == "positif":
-                st.success(f"Sentimen: {prediction}")
-            elif prediction == "negatif":
-                st.error(f"Sentimen: {prediction}")
-            else:
-                st.info(f"Sentimen: {prediction}")
+            col1, col2 = st.columns(2)
 
+            with col1:
+                st.subheader("Hasil SVM")
+                if svm_pred == "positif":
+                    st.success(svm_pred)
+                elif svm_pred == "negatif":
+                    st.error(svm_pred)
+                else:
+                    st.info(svm_pred)
 
-
+            with col2:
+                st.subheader("Hasil Naive Bayes")
+                if nb_pred == "positif":
+                    st.success(nb_pred)
+                elif nb_pred == "negatif":
+                    st.error(nb_pred)
+                else:
+                    st.info(nb_pred)
