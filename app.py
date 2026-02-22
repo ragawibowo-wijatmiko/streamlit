@@ -1,188 +1,159 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import pickle
+import joblib
 import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix, classification_report
 
-# =========================
-# CONFIG
-# =========================
-st.set_page_config(
-    page_title="Sistem Analisis Sentimen",
-    page_icon="📊",
-    layout="wide"
+st.set_page_config(page_title="Dashboard Analisis Sentimen Cybercrime",
+                   page_icon="📊",
+                   layout="wide")
+
+# ==============================
+# LOAD DATA & MODEL
+# ==============================
+
+@st.cache_resource
+def load_model():
+    svm = joblib.load("model_svm.pkl")
+    nb = joblib.load("model_nb.pkl")
+    tfidf = joblib.load("vectorizer_tfidf.pkl")
+    return svm, nb, tfidf
+
+@st.cache_data
+def load_data():
+    return pd.read_csv("dataset.csv")
+
+svm_model, nb_model, tfidf = load_model()
+df = load_data()
+
+# ==============================
+# SIDEBAR
+# ==============================
+
+st.sidebar.title("📌 Menu Navigasi")
+menu = st.sidebar.radio(
+    "Pilih Halaman",
+    ["Dashboard Utama",
+     "Visualisasi Sentimen",
+     "Perbandingan Model",
+     "Prediksi Komentar"]
 )
 
-# =========================
-# STYLE
-# =========================
-st.markdown("""
-<style>
-body {
-    background: linear-gradient(120deg, #020617, #020617);
-    color: white;
-}
-.block-container {
-    padding-top: 1rem;
-}
-.card {
-    background: rgba(15,23,42,0.95);
-    border-radius: 15px;
-    padding: 25px;
-    box-shadow: 0 0 25px rgba(0,0,0,0.4);
-    text-align: center;
-}
-.big {
-    font-size: 42px;
-    font-weight: bold;
-}
-.sidebar .sidebar-content {
-    background: #020617;
-}
-</style>
-""", unsafe_allow_html=True)
+st.sidebar.markdown("---")
+st.sidebar.info("Skripsi Raga Wibowo Wijatmiko\nAnalisis Sentimen Cybercrime\nSVM vs Naive Bayes")
 
-# =========================
-# SESSION STATE
-# =========================
-if "history" not in st.session_state:
-    st.session_state.history = []
+# ==============================
+# DASHBOARD UTAMA
+# ==============================
 
-# =========================
-# LOAD MODEL (SAFE)
-# =========================
-@st.cache_resource
-def load_models():
-    try:
-        with open("models/nb_model.pkl", "rb") as f:
-            nb = pickle.load(f)
-        with open("models/svm_model.pkl", "rb") as f:
-            svm = pickle.load(f)
-        with open("models/vectorizer.pkl", "rb") as f:
-            vec = pickle.load(f)
-        return nb, svm, vec, True
-    except:
-        return None, None, None, False
+if menu == "Dashboard Utama":
 
-nb_model, svm_model, vectorizer, model_status = load_models()
+    st.title("📊 Dashboard Analisis Sentimen Komentar YouTube")
+    st.markdown("### Kasus Cybercrime (Bjorka)")
 
-# =========================
-# SIDEBAR MENU
-# =========================
-menu = st.sidebar.radio("📂 Menu Sistem", [
-    "🏠 Dashboard",
-    "✍️ Prediksi Sentimen",
-    "📊 Perbandingan Model",
-    "📈 Distribusi Sentimen",
-    "ℹ️ Tentang Sistem"
-])
+    total = len(df)
+    positif = len(df[df['sentimen'] == 'positif'])
+    negatif = len(df[df['sentimen'] == 'negatif'])
+    netral = len(df[df['sentimen'] == 'netral'])
 
-# =========================
-# DASHBOARD
-# =========================
-if menu == "🏠 Dashboard":
-    st.markdown("## 📊 Dashboard Analisis Sentimen")
-    st.markdown("### Sistem Analisis Sentimen Berbasis Machine Learning")
+    col1, col2, col3, col4 = st.columns(4)
 
-    pos = sum(1 for x in st.session_state.history if x=="positive")
-    neg = sum(1 for x in st.session_state.history if x=="negative")
-    neu = sum(1 for x in st.session_state.history if x=="neutral")
+    col1.metric("Total Komentar", total)
+    col2.metric("Positif", positif)
+    col3.metric("Negatif", negatif)
+    col4.metric("Netral", netral)
 
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        st.markdown(f"<div class='card'><div>Positive</div><div class='big'>{pos}</div></div>", unsafe_allow_html=True)
-    with c2:
-        st.markdown(f"<div class='card'><div>Negative</div><div class='big'>{neg}</div></div>", unsafe_allow_html=True)
-    with c3:
-        st.markdown(f"<div class='card'><div>Neutral</div><div class='big'>{neu}</div></div>", unsafe_allow_html=True)
+    st.markdown("---")
 
-# =========================
-# PREDIKSI
-# =========================
-elif menu == "✍️ Prediksi Sentimen":
-    st.markdown("## ✍️ Input Teks Ulasan")
+    st.subheader("📄 Preview Dataset")
+    st.dataframe(df.head())
 
-    text_input = st.text_area("Masukkan teks ulasan:")
+# ==============================
+# VISUALISASI SENTIMEN
+# ==============================
 
-    if st.button("🔍 Analisis Sentimen"):
-        if model_status:
-            X = vectorizer.transform([text_input])
-            pred = svm_model.predict(X)[0]
-            st.session_state.history.append(pred)
+elif menu == "Visualisasi Sentimen":
 
-            st.success(f"Hasil Sentimen: **{pred.upper()}**")
-        else:
-            st.error("Model tidak termuat")
+    st.title("📈 Distribusi Sentimen")
 
-# =========================
-# PERBANDINGAN MODEL
-# =========================
-elif menu == "📊 Perbandingan Model":
-    st.markdown("## 📊 Perbandingan Performa Model")
-
-    metrics = pd.DataFrame({
-        "Model": ["Naive Bayes", "SVM"],
-        "Accuracy": [0.62, 0.80],
-        "Precision": [0.60, 0.80],
-        "Recall": [0.61, 0.80],
-        "F1-Score": [0.53, 0.80]
-    })
-
-    fig, ax = plt.subplots(figsize=(10,5))
-    x = np.arange(len(metrics["Model"]))
-    w = 0.18
-
-    ax.bar(x - 1.5*w, metrics["Accuracy"], w, label="Accuracy")
-    ax.bar(x - 0.5*w, metrics["Precision"], w, label="Precision")
-    ax.bar(x + 0.5*w, metrics["Recall"], w, label="Recall")
-    ax.bar(x + 1.5*w, metrics["F1-Score"], w, label="F1-Score")
-
-    ax.set_xticks(x)
-    ax.set_xticklabels(metrics["Model"])
-    ax.set_ylabel("Score")
-    ax.set_title("Perbandingan Kinerja Model")
-    ax.legend()
-
-    st.pyplot(fig)
-
-# =========================
-# DISTRIBUSI
-# =========================
-elif menu == "📈 Distribusi Sentimen":
-    st.markdown("## 📈 Distribusi Hasil Prediksi")
-
-    pos = st.session_state.history.count("positive")
-    neg = st.session_state.history.count("negative")
-    neu = st.session_state.history.count("neutral")
-
-    df = pd.DataFrame({
-        "Sentimen": ["Positive", "Negative", "Neutral"],
-        "Jumlah": [pos, neg, neu]
-    })
+    sentiment_counts = df['sentimen'].value_counts()
 
     fig, ax = plt.subplots()
-    ax.bar(df["Sentimen"], df["Jumlah"])
-    ax.set_title("Distribusi Sentimen")
-    ax.set_ylabel("Jumlah Prediksi")
+    sentiment_counts.plot(kind='bar', ax=ax)
+    ax.set_xlabel("Sentimen")
+    ax.set_ylabel("Jumlah Komentar")
+    ax.set_title("Distribusi Sentimen Komentar YouTube")
 
     st.pyplot(fig)
 
-# =========================
-# ABOUT
-# =========================
-elif menu == "ℹ️ Tentang Sistem":
-    st.markdown("## ℹ️ Tentang Sistem")
-    st.write("""
-Sistem ini merupakan aplikasi analisis sentimen berbasis machine learning 
-menggunakan algoritma Naive Bayes dan Support Vector Machine (SVM).
+# ==============================
+# PERBANDINGAN MODEL
+# ==============================
 
-Tahapan sistem:
-1. Preprocessing teks
-2. Vectorisasi TF-IDF
-3. Training model
-4. Evaluasi model
-5. Prediksi sentimen
-6. Visualisasi hasil
+elif menu == "Perbandingan Model":
 
-Sistem ini dikembangkan sebagai bagian dari penelitian skripsi.
-""")
+    st.title("⚖️ Perbandingan Model SVM vs Naive Bayes")
+
+    X = tfidf.transform(df['clean_text'])
+    y = df['sentimen']
+
+    svm_pred = svm_model.predict(X)
+    nb_pred = nb_model.predict(X)
+
+    svm_report = classification_report(y, svm_pred, output_dict=True)
+    nb_report = classification_report(y, nb_pred, output_dict=True)
+
+    metrics = ["accuracy", "weighted avg"]
+
+    svm_accuracy = svm_report["accuracy"]
+    nb_accuracy = nb_report["accuracy"]
+
+    st.subheader("📌 Akurasi Model")
+    col1, col2 = st.columns(2)
+    col1.metric("SVM Accuracy", f"{svm_accuracy:.2f}")
+    col2.metric("Naive Bayes Accuracy", f"{nb_accuracy:.2f}")
+
+    st.markdown("---")
+
+    st.subheader("📊 Grafik Perbandingan Akurasi")
+
+    fig, ax = plt.subplots()
+    ax.bar(["SVM", "Naive Bayes"], [svm_accuracy, nb_accuracy])
+    ax.set_ylim(0, 1)
+    ax.set_ylabel("Accuracy")
+    ax.set_title("Perbandingan Akurasi Model")
+
+    st.pyplot(fig)
+
+# ==============================
+# PREDIKSI KOMENTAR BARU
+# ==============================
+
+elif menu == "Prediksi Komentar":
+
+    st.title("🧠 Prediksi Sentimen Komentar Baru")
+
+    user_input = st.text_area("Masukkan komentar di sini:")
+
+    model_choice = st.selectbox("Pilih Model", ["SVM", "Naive Bayes"])
+
+    if st.button("Prediksi"):
+
+        if user_input.strip() == "":
+            st.warning("Komentar tidak boleh kosong!")
+        else:
+            vector = tfidf.transform([user_input])
+
+            if model_choice == "SVM":
+                prediction = svm_model.predict(vector)[0]
+            else:
+                prediction = nb_model.predict(vector)[0]
+
+            if prediction == "positif":
+                st.success(f"Sentimen: {prediction}")
+            elif prediction == "negatif":
+                st.error(f"Sentimen: {prediction}")
+            else:
+                st.info(f"Sentimen: {prediction}")
