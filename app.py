@@ -1,114 +1,198 @@
-# app.py
-# Dashboard Sentiment Analysis Streamlit (Dark Theme + Visual Dashboard)
-
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
+import joblib
+import numpy as np
 
-st.set_page_config(page_title="Sentiment Dashboard", layout="wide")
+# ==============================
+# PAGE CONFIG
+# ==============================
+st.set_page_config(
+    page_title="Sentiment Analysis Dashboard",
+    layout="wide",
+    page_icon="📊"
+)
 
-# ======================
-# Custom CSS (Dark UI)
-# ======================
+# ==============================
+# DARK THEME CSS
+# ==============================
 st.markdown("""
 <style>
-body {
-    background-color: #0e1117;
-}
-.sidebar .sidebar-content {
-    background-color: #0b1320;
-}
-.block-container {
-    padding-top: 1.5rem;
-}
-.metric-box {
-    background: #111827;
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
+.stApp {
+    background: linear-gradient(135deg, #020617, #0f172a);
     color: white;
 }
-.title {
-    color: #60a5fa;
-    font-weight: 700;
+
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #020617, #0f172a);
+}
+
+h1, h2, h3, h4, h5, h6, p, span, label {
+    color: white !important;
+}
+
+.block-container {
+    padding: 2rem;
+}
+
+div[data-testid="stMetric"] {
+    background-color: #020617;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid #1e293b;
+}
+
+[data-testid="stDataFrame"] {
+    background-color: #020617;
+    color: white;
+}
+
+.card {
+    background: #020617;
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid #1e293b;
+    margin-bottom: 20px;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ======================
-# Sidebar
-# ======================
+# ==============================
+# SIDEBAR
+# ==============================
 st.sidebar.title("📊 Sentiment Dashboard")
-menu = st.sidebar.radio("Menu", ["Dashboard Utama", "Perbandingan Model", "Distribusi Sentimen"])
+menu = st.sidebar.radio(
+    "Menu Analisis",
+    [
+        "🏠 Dashboard Utama",
+        "📊 Distribusi Sentimen",
+        "📈 Perbandingan Model",
+        "🧪 Evaluasi Model",
+        "📁 Dataset",
+        "✍️ Prediksi Manual"
+    ]
+)
 
-# ======================
-# Load Data
-# ======================
+# ==============================
+# LOAD DATA
+# ==============================
+@st.cache_data
+def load_dataset():
+    return pd.read_csv("data/dataset_labeled.csv")
+
 @st.cache_data
 def load_metrics():
-    return pd.read_csv("model_metrics.csv")
+    return pd.read_csv("data/model_metrics.csv")
 
-@st.cache_data
-def load_sentiment():
-    return pd.read_csv("sentiment_label_output.csv")
+# ==============================
+# SAFE LOAD
+# ==============================
+try:
+    df = load_dataset()
+except:
+    df = pd.DataFrame()
 
-# ======================
-# Dashboard Utama
-# ======================
-if menu == "Dashboard Utama":
-    st.markdown("<h1 class='title'>📌 Dashboard Analisis Sentimen</h1>", unsafe_allow_html=True)
+try:
+    metrics_df = load_metrics()
+except:
+    metrics_df = pd.DataFrame()
 
-    df = load_sentiment()
+# ==============================
+# DASHBOARD
+# ==============================
+if menu == "🏠 Dashboard Utama":
+    st.title("📊 Dashboard Analisis Sentimen")
+    st.markdown("### Sistem Analisis Sentimen Berbasis Machine Learning")
 
-    pos = (df['sentiment'] == 'positive').sum()
-    neg = (df['sentiment'] == 'negative').sum()
-    neu = (df['sentiment'] == 'neutral').sum()
+    col1, col2, col3 = st.columns(3)
 
-    c1, c2, c3 = st.columns(3)
+    if not df.empty and "sentiment" in df.columns:
+        pos = (df["sentiment"] == "positive").sum()
+        neg = (df["sentiment"] == "negative").sum()
+        neu = (df["sentiment"] == "neutral").sum()
+    else:
+        pos, neg, neu = 0,0,0
 
-    with c1:
-        st.markdown(f"<div class='metric-box'><h3>😊 Positive</h3><h1>{pos}</h1></div>", unsafe_allow_html=True)
-    with c2:
-        st.markdown(f"<div class='metric-box'><h3>😡 Negative</h3><h1>{neg}</h1></div>", unsafe_allow_html=True)
-    with c3:
-        st.markdown(f"<div class='metric-box'><h3>😐 Neutral</h3><h1>{neu}</h1></div>", unsafe_allow_html=True)
+    with col1:
+        st.metric("Positive", pos)
+    with col2:
+        st.metric("Negative", neg)
+    with col3:
+        st.metric("Neutral", neu)
 
-    # Pie Chart
-    st.subheader("📊 Distribusi Sentimen")
-    fig, ax = plt.subplots()
-    ax.pie([pos, neg, neu], labels=['Positive','Negative','Neutral'], autopct='%1.1f%%', startangle=90)
-    ax.axis('equal')
-    st.pyplot(fig)
+# ==============================
+# DISTRIBUSI SENTIMEN
+# ==============================
+elif menu == "📊 Distribusi Sentimen":
+    st.title("📊 Distribusi Sentimen Dataset")
 
-# ======================
-# Perbandingan Model
-# ======================
-elif menu == "Perbandingan Model":
-    st.markdown("<h1 class='title'>📈 Perbandingan Model</h1>", unsafe_allow_html=True)
+    if not df.empty and "sentiment" in df.columns:
+        pos = int((df["sentiment"] == "positive").sum())
+        neg = int((df["sentiment"] == "negative").sum())
+        neu = int((df["sentiment"] == "neutral").sum())
 
-    dfm = load_metrics().set_index("Model")
+        values = [pos, neg, neu]
+        if sum(values) == 0:
+            values = [1,1,1]
 
-    st.dataframe(dfm)
+        fig, ax = plt.subplots()
+        ax.pie(values, labels=["Positive","Negative","Neutral"], autopct="%1.1f%%", startangle=90)
+        ax.axis("equal")
+        st.pyplot(fig)
+    else:
+        st.error("Dataset tidak memiliki kolom sentiment")
 
-    st.subheader("📊 Grafik Batang Perbandingan Model")
-    fig, ax = plt.subplots()
-    dfm[['Accuracy','Precision','Recall','F1']].plot(kind='bar', ax=ax)
-    plt.xticks(rotation=0)
-    st.pyplot(fig)
+# ==============================
+# PERBANDINGAN MODEL
+# ==============================
+elif menu == "📈 Perbandingan Model":
+    st.title("📈 Perbandingan Performa Model")
 
-# ======================
-# Distribusi Sentimen
-# ======================
-elif menu == "Distribusi Sentimen":
-    st.markdown("<h1 class='title'>📊 Distribusi Sentimen Dataset</h1>", unsafe_allow_html=True)
+    if not metrics_df.empty:
+        st.dataframe(metrics_df)
 
-    df = load_sentiment()
+        metrics_df_plot = metrics_df.set_index("Model")
 
-    st.dataframe(df.head(100))
+        st.bar_chart(metrics_df_plot[["Accuracy","Precision","Recall","F1-Score"]])
+    else:
+        st.error("File model_metrics.csv tidak ditemukan")
 
-    sent_count = df['sentiment'].value_counts()
+# ==============================
+# EVALUASI MODEL
+# ==============================
+elif menu == "🧪 Evaluasi Model":
+    st.title("🧪 Evaluasi Model Machine Learning")
 
-    fig, ax = plt.subplots()
-    sent_count.plot(kind='bar', ax=ax)
-    st.pyplot(fig)
+    if not metrics_df.empty:
+        st.markdown("### Hasil Evaluasi")
+        st.dataframe(metrics_df)
+    else:
+        st.error("Data evaluasi model belum tersedia")
+
+# ==============================
+# DATASET
+# ==============================
+elif menu == "📁 Dataset":
+    st.title("📁 Dataset Viewer")
+    if not df.empty:
+        st.dataframe(df)
+    else:
+        st.error("Dataset belum tersedia")
+
+# ==============================
+# PREDIKSI MANUAL
+# ==============================
+elif menu == "✍️ Prediksi Manual":
+    st.title("✍️ Prediksi Sentimen Manual")
+
+    text = st.text_area("Masukkan teks:")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button("Prediksi SVM"):
+            st.success("Prediksi: POSITIVE (dummy demo)")
+
+    with col2:
+        if st.button("Prediksi Naive Bayes"):
+            st.success("Prediksi: POSITIVE (dummy demo)")
