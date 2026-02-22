@@ -16,30 +16,70 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-html, body, [class*="css"]  {
-    background-color: #0A192F;
+
+/* BACKGROUND */
+html, body, .stApp {
+    background-color: #0B1E3C;
     color: white;
 }
 
-.stMetric {
-    background-color: #112240;
+/* SIDEBAR */
+section[data-testid="stSidebar"] {
+    background-color: #071633;
+}
+
+/* SIDEBAR TITLE */
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3 {
+    color: #4FD1C5;
+}
+
+/* METRIC CARD */
+div[data-testid="metric-container"] {
+    background: linear-gradient(135deg, #112D4E, #1A3A6E);
+    border-radius: 15px;
     padding: 20px;
-    border-radius: 12px;
-    text-align: center;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
 }
 
-.sidebar .sidebar-content {
-    background-color: #020C1B;
+/* METRIC LABEL */
+div[data-testid="metric-container"] label {
+    color: #A8DADC;
+    font-weight: 600;
 }
 
-h1, h2, h3, h4 {
-    color: #64FFDA;
+/* METRIC VALUE */
+div[data-testid="metric-container"] div {
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
 }
 
+/* BUTTON STYLE */
 .stButton>button {
-    background-color: #64FFDA;
+    background: linear-gradient(90deg, #1F4068, #1B262C);
+    color: white;
+    border-radius: 10px;
+    height: 45px;
+    font-weight: bold;
+    border: none;
+}
+
+.stButton>button:hover {
+    background: linear-gradient(90deg, #4FD1C5, #38B2AC);
     color: black;
-    border-radius: 8px;
+}
+
+/* TABLE */
+div[data-testid="stDataFrame"] {
+    background-color: #102A43;
+    border-radius: 10px;
+}
+
+/* HEADINGS */
+h1, h2, h3 {
+    color: #4FD1C5;
 }
 
 </style>
@@ -201,3 +241,4 @@ elif menu == "Prediksi Komentar":
                     st.error(nb_pred)
                 else:
                     st.info(nb_pred)
+
