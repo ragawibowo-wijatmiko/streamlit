@@ -102,31 +102,37 @@ elif menu == "Visualisasi Sentimen":
 
 elif menu == "Perbandingan Model":
 
-    st.title("⚖️ Perbandingan Model SVM vs Naive Bayes")
+    st.title("⚖️ Perbandingan Performa Model (Data Uji)")
 
-    X = tfidf.transform(df['stemming'])
-    y = df['sentiment']
+    # HASIL DARI SKRIPSI (DATA TEST)
+    metrics = ["Akurasi", "Presisi", "Recall", "F1-Score"]
 
-    svm_pred = svm_model.predict(X)
-    nb_pred = nb_model.predict(X)
+    svm_scores = [0.76, 0.78, 0.76, 0.77]
+    nb_scores  = [0.59, 0.64, 0.59, 0.53]
 
-    svm_report = classification_report(y, svm_pred, output_dict=True)
-    nb_report = classification_report(y, nb_pred, output_dict=True)
+    x = range(len(metrics))
+    width = 0.35
 
-    svm_accuracy = svm_report["accuracy"]
-    nb_accuracy = nb_report["accuracy"]
+    fig, ax = plt.subplots(figsize=(8,5))
 
-    col1, col2 = st.columns(2)
-    col1.metric("SVM Accuracy", f"{svm_accuracy:.2f}")
-    col2.metric("Naive Bayes Accuracy", f"{nb_accuracy:.2f}")
+    ax.bar([i - width/2 for i in x], svm_scores, width, label="SVM")
+    ax.bar([i + width/2 for i in x], nb_scores, width, label="Naive Bayes")
 
-    st.markdown("---")
+    ax.set_xticks(x)
+    ax.set_xticklabels(metrics)
+    ax.set_ylim(0,1)
+    ax.set_ylabel("Nilai Skor")
+    ax.set_title("Perbandingan Performa Algoritma SVM vs Naive Bayes (Data Uji)")
+    ax.legend()
 
-    fig, ax = plt.subplots()
-    ax.bar(["SVM", "Naive Bayes"], [svm_accuracy, nb_accuracy])
-    ax.set_ylim(0, 1)
-    ax.set_title("Perbandingan Akurasi Model")
+    # Tambahkan angka di atas bar
+    for i in range(len(metrics)):
+        ax.text(i - width/2, svm_scores[i] + 0.02, f"{svm_scores[i]:.2f}", ha='center')
+        ax.text(i + width/2, nb_scores[i] + 0.02, f"{nb_scores[i]:.2f}", ha='center')
+
     st.pyplot(fig)
+
+    st.info("Hasil evaluasi dihitung berdasarkan data uji (20% dari total dataset).")
 
 # ======================
 # PREDIKSI
@@ -157,3 +163,4 @@ elif menu == "Prediksi Komentar":
                 st.error(f"Sentimen: {prediction}")
             else:
                 st.info(f"Sentimen: {prediction}")
+
