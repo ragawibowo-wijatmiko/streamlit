@@ -39,6 +39,12 @@ def load_data():
 svm_model, nb_model, tfidf = load_model()
 df = load_data()
 
+@st.cache_data
+def load_metrics():
+    return pd.read_csv("model_metrics.csv")
+
+metrics_df = load_metrics()
+
 # ======================
 # SIDEBAR
 # ======================
@@ -104,11 +110,12 @@ elif menu == "Perbandingan Model":
 
     st.title("⚖️ Perbandingan Performa Model (Data Uji)")
 
-    # HASIL DARI SKRIPSI (DATA TEST)
-    metrics = ["Akurasi", "Presisi", "Recall", "F1-Score"]
+    st.subheader("📊 Tabel Hasil Evaluasi")
+    st.dataframe(metrics_df)
 
-    svm_scores = [0.76, 0.78, 0.76, 0.77]
-    nb_scores  = [0.59, 0.64, 0.59, 0.53]
+    metrics = metrics_df['Metric']
+    svm_scores = metrics_df['SVM']
+    nb_scores = metrics_df['Naive_Bayes']
 
     x = range(len(metrics))
     width = 0.35
@@ -125,7 +132,6 @@ elif menu == "Perbandingan Model":
     ax.set_title("Perbandingan Performa Algoritma SVM vs Naive Bayes (Data Uji)")
     ax.legend()
 
-    # Tambahkan angka di atas bar
     for i in range(len(metrics)):
         ax.text(i - width/2, svm_scores[i] + 0.02, f"{svm_scores[i]:.2f}", ha='center')
         ax.text(i + width/2, nb_scores[i] + 0.02, f"{nb_scores[i]:.2f}", ha='center')
@@ -163,4 +169,5 @@ elif menu == "Prediksi Komentar":
                 st.error(f"Sentimen: {prediction}")
             else:
                 st.info(f"Sentimen: {prediction}")
+
 
