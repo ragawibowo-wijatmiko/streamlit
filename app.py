@@ -113,7 +113,7 @@ elif menu == "Perbandingan Model":
     st.subheader("📊 Tabel Hasil Evaluasi")
     st.dataframe(metrics_df)
 
-    metrics = metrics_df['Metric']
+    metrics = metrics_df['Metrics']
     svm_scores = metrics_df['SVM']
     nb_scores = metrics_df['Naive_Bayes']
 
@@ -169,5 +169,6 @@ elif menu == "Prediksi Komentar":
                 st.error(f"Sentimen: {prediction}")
             else:
                 st.info(f"Sentimen: {prediction}")
+
 
 
