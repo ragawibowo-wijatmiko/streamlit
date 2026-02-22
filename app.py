@@ -3,12 +3,11 @@ import pandas as pd
 import joblib
 import plotly.express as px
 import plotly.graph_objects as go
-from sklearn.metrics import confusion_matrix
 
 st.set_page_config(page_title="Sentiment Analysis Dashboard", layout="wide")
 
 # =========================
-# 🎨 PREMIUM CSS STYLE
+# 🎨 PREMIUM DARK STYLE
 # =========================
 st.markdown("""
 <style>
@@ -56,8 +55,13 @@ div[data-testid="metric-container"] {
 svm_model = joblib.load("svm_model.pkl")
 nb_model = joblib.load("nb_model.pkl")
 vectorizer = joblib.load("vectorizer.pkl")
-metrics = joblib.load("model_metrics.csv")
+
+metrics = pd.read_csv("model_metrics.csv")
 df = pd.read_csv("dataset.csv")
+
+# Ambil metrics per model
+svm_metrics = metrics[metrics["Model"] == "SVM"].iloc[0]
+nb_metrics = metrics[metrics["Model"] == "Naive Bayes"].iloc[0]
 
 # =========================
 # HEADER
@@ -65,39 +69,45 @@ df = pd.read_csv("dataset.csv")
 st.markdown("## 🚀 Sentiment Analysis Comparison Dashboard")
 st.markdown("Perbandingan performa model SVM dan Naive Bayes pada data uji")
 
+st.divider()
+
 # =========================
 # KPI METRICS
 # =========================
 col1, col2 = st.columns(2)
 
 with col1:
-    st.metric("SVM Accuracy", metrics["SVM"]["accuracy"])
-    st.metric("SVM F1-Score", metrics["SVM"]["f1"])
+    st.metric("SVM Accuracy", svm_metrics["Accuracy"])
+    st.metric("SVM Precision", svm_metrics["Precision"])
+    st.metric("SVM Recall", svm_metrics["Recall"])
+    st.metric("SVM F1-Score", svm_metrics["F1-score"])
 
 with col2:
-    st.metric("NB Accuracy", metrics["Naive Bayes"]["accuracy"])
-    st.metric("NB F1-Score", metrics["Naive Bayes"]["f1"])
+    st.metric("Naive Bayes Accuracy", nb_metrics["Accuracy"])
+    st.metric("Naive Bayes Precision", nb_metrics["Precision"])
+    st.metric("Naive Bayes Recall", nb_metrics["Recall"])
+    st.metric("Naive Bayes F1-Score", nb_metrics["F1-score"])
 
 st.divider()
 
 # =========================
 # 📊 BAR COMPARISON
 # =========================
-st.subheader("📊 Perbandingan Performa Model")
+st.subheader("📊 Perbandingan Performa Model (Data Uji)")
 
 comparison_df = pd.DataFrame({
     "Metric": ["Accuracy","Precision","Recall","F1-score"],
     "SVM": [
-        metrics["SVM"]["accuracy"],
-        metrics["SVM"]["precision"],
-        metrics["SVM"]["recall"],
-        metrics["SVM"]["f1"]
+        svm_metrics["Accuracy"],
+        svm_metrics["Precision"],
+        svm_metrics["Recall"],
+        svm_metrics["F1-score"]
     ],
     "Naive Bayes": [
-        metrics["Naive Bayes"]["accuracy"],
-        metrics["Naive Bayes"]["precision"],
-        metrics["Naive Bayes"]["recall"],
-        metrics["Naive Bayes"]["f1"]
+        nb_metrics["Accuracy"],
+        nb_metrics["Precision"],
+        nb_metrics["Recall"],
+        nb_metrics["F1-score"]
     ]
 })
 
@@ -106,7 +116,8 @@ fig_bar = px.bar(
     x="Metric",
     y=["SVM","Naive Bayes"],
     barmode="group",
-    template="plotly_dark"
+    template="plotly_dark",
+    text_auto=True
 )
 
 st.plotly_chart(fig_bar, use_container_width=True)
@@ -154,10 +165,10 @@ if st.button("Prediksi"):
     with col2:
         st.info(f"Naive Bayes Prediction: {nb_pred}")
 
+st.divider()
+
 # =========================
 # 📋 DATASET PREVIEW
 # =========================
-st.divider()
 st.subheader("📋 Preview Dataset")
 st.dataframe(df.head())
-
