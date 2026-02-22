@@ -56,7 +56,7 @@ div[data-testid="metric-container"] {
 svm_model = joblib.load("svm_model.pkl")
 nb_model = joblib.load("nb_model.pkl")
 vectorizer = joblib.load("vectorizer.pkl")
-metrics = joblib.load("model_metrics.pkl")
+metrics = joblib.load("model_metrics.csv")
 df = pd.read_csv("dataset.csv")
 
 # =========================
@@ -160,3 +160,4 @@ if st.button("Prediksi"):
 st.divider()
 st.subheader("📋 Preview Dataset")
 st.dataframe(df.head())
+
